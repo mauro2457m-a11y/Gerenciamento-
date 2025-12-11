@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { SocialPlatform, PostTone, GeneratedContent, SocialPost } from '../types';
-import { generatePostText, generatePostImage, checkApiKey } from '../services/geminiService';
-import { Wand2, Image as ImageIcon, Copy, Calendar as CalendarIcon, Save, Loader2, Share2, Check, PenLine, Eye, AlertCircle, ArrowRight } from 'lucide-react';
+import { generatePostText, generatePostImage } from '../services/geminiService';
+import { Wand2, Image as ImageIcon, Copy, Save, Loader2, Share2, Check, PenLine, Eye } from 'lucide-react';
 
 interface PostCreatorProps {
   onSavePost: (post: SocialPost) => void;
   onNavigateToSettings: () => void;
 }
 
-const PostCreator: React.FC<PostCreatorProps> = ({ onSavePost, onNavigateToSettings }) => {
+const PostCreator: React.FC<PostCreatorProps> = ({ onSavePost }) => {
   const [topic, setTopic] = useState('');
   const [platform, setPlatform] = useState<SocialPlatform>(SocialPlatform.INSTAGRAM);
   const [tone, setTone] = useState<PostTone>(PostTone.PROFESSIONAL);
@@ -20,21 +20,12 @@ const PostCreator: React.FC<PostCreatorProps> = ({ onSavePost, onNavigateToSetti
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
-  const [hasApiKey, setHasApiKey] = useState(true);
 
   // Mobile Tab State
   const [mobileTab, setMobileTab] = useState<'edit' | 'preview'>('edit');
 
-  useEffect(() => {
-    setHasApiKey(checkApiKey());
-  }, []);
-
   const handleGenerate = async () => {
     if (!topic) return;
-    if (!hasApiKey) {
-        onNavigateToSettings();
-        return;
-    }
 
     setIsGenerating(true);
     setGeneratedContent(null);
@@ -62,7 +53,7 @@ const PostCreator: React.FC<PostCreatorProps> = ({ onSavePost, onNavigateToSetti
         }
       }
     } catch (error) {
-      alert("Erro ao gerar conteúdo. Verifique sua chave API e tente novamente.");
+      alert("Erro ao gerar conteúdo. Verifique o console para mais detalhes.");
     } finally {
       setIsGenerating(false);
     }
@@ -110,24 +101,6 @@ const PostCreator: React.FC<PostCreatorProps> = ({ onSavePost, onNavigateToSetti
           Prévia
         </button>
       </div>
-
-      {!hasApiKey && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-             <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-             <div>
-                <h3 className="text-amber-800 font-semibold text-sm">Chave API necessária</h3>
-                <p className="text-amber-700 text-sm">Para gerar conteúdo com IA, você precisa configurar sua chave API do Gemini.</p>
-             </div>
-          </div>
-          <button 
-             onClick={onNavigateToSettings}
-             className="text-sm font-medium bg-amber-100 text-amber-800 px-4 py-2 rounded-lg hover:bg-amber-200 transition-colors flex items-center whitespace-nowrap"
-          >
-             Configurar Agora <ArrowRight className="w-4 h-4 ml-1" />
-          </button>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
         {/* Input Section */}
@@ -207,7 +180,7 @@ const PostCreator: React.FC<PostCreatorProps> = ({ onSavePost, onNavigateToSetti
 
             <button
               onClick={handleGenerate}
-              disabled={isGenerating || !topic || !hasApiKey}
+              disabled={isGenerating || !topic}
               className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl shadow-lg shadow-indigo-200 disabled:shadow-none transition-all flex justify-center items-center"
             >
               {isGenerating ? (

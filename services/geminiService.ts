@@ -1,26 +1,12 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { SocialPlatform, PostTone, GeneratedContent } from '../types';
 
-// Helper to get API key from storage or env
-export const getApiKey = (): string => {
-  return localStorage.getItem('gemini_api_key') || process.env.API_KEY || '';
-};
-
-export const setApiKey = (key: string): void => {
-  localStorage.setItem('gemini_api_key', key);
-};
-
-// Helper to validate API key
-export const checkApiKey = (): boolean => {
-  return !!getApiKey();
-};
-
+// The API key must be obtained exclusively from the environment variable process.env.API_KEY.
 const getAIClient = () => {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    throw new Error("API Key não configurada. Por favor, adicione sua chave nas configurações.");
-  }
-  return new GoogleGenAI({ apiKey });
+  const apiKey = process.env.API_KEY;
+  // Assume this variable is pre-configured, valid, and accessible.
+  // Using fallback to empty string just to satisfy type checker if environment is not set up in dev.
+  return new GoogleGenAI({ apiKey: apiKey || '' });
 };
 
 export const generatePostText = async (
@@ -107,11 +93,6 @@ export const generatePostImage = async (imagePrompt: string): Promise<string> =>
 
 export const analyzeTrends = async (recentPosts: string[]): Promise<string> => {
     const modelId = 'gemini-2.5-flash';
-    // If no API key, return a default message instead of crashing
-    if (!checkApiKey()) {
-      return "Configure sua chave API nas configurações para receber análises de tendências.";
-    }
-
     const ai = getAIClient();
     
     const prompt = `
@@ -130,6 +111,6 @@ export const analyzeTrends = async (recentPosts: string[]): Promise<string> => {
         return response.text || "Não foi possível analisar as tendências no momento.";
     } catch (error) {
         console.error(error);
-        return "Erro ao analisar tendências. Verifique sua chave API.";
+        return "Erro ao analisar tendências.";
     }
 }
